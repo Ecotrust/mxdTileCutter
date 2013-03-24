@@ -90,10 +90,33 @@ namespace ArcMapAddin1
         protected override void OnClick()
         {
 
-            ZoomToActiveLayerInTOC(ArcMap.Application.Document as IMxDocument);
             
             ESRI.ArcGIS.ArcMapUI.IMxDocument mxDocument = ArcMap.Application.Document as ESRI.ArcGIS.ArcMapUI.IMxDocument; // Dynamic Cast
             ESRI.ArcGIS.Carto.IActiveView activeView = mxDocument.ActiveView;
+
+            ZoomToActiveLayerInTOC(mxDocument as IMxDocument);
+
+
+
+
+
+
+
+            ESRI.ArcGIS.Carto.IMap map = activeView.FocusMap;
+
+            for (int lyrnum = 0; lyrnum < map.LayerCount; lyrnum++)
+            {
+                // Refresh and Zoom to the layer
+                activeView.Extent = map.get_Layer(lyrnum).AreaOfInterest;
+                activeView.Refresh();
+                CreateJPEGFromActiveView(activeView, "e:\\workspace\\test" + lyrnum + ".jpg");
+          
+            }
+
+
+
+
+
 
             System.Boolean test = CreateJPEGFromActiveView(activeView, "e:\\workspace\\test.jpg");
             
