@@ -44,8 +44,8 @@ namespace ArcMapAddin1
             ESRI.ArcGIS.esriSystem.tagRECT exportRECT;
             exportRECT.left = 0;
             exportRECT.top = 0;
-            exportRECT.right = tileSizeX; // activeView.ExportFrame.right * (outputResolution / screenResolution);
-            exportRECT.bottom = tileSizeY; // activeView.ExportFrame.bottom * (outputResolution / screenResolution);
+            exportRECT.right = tileSizeX;
+            exportRECT.bottom = tileSizeY;
 
             // Set up the PixelBounds envelope to match the exportRECT
             ESRI.ArcGIS.Geometry.IEnvelope envelope = new ESRI.ArcGIS.Geometry.EnvelopeClass();
@@ -61,48 +61,17 @@ namespace ArcMapAddin1
             return true;
         }
 
-        ///<summary>Zooms to the selected layer in the TOC associated with the active view.</summary>
-        /// 
-        ///<param name="mxDocument">An IMxDocument interface</param>
-        ///  
-        ///<remarks></remarks>
-        public void ZoomToActiveLayerInTOC(ESRI.ArcGIS.ArcMapUI.IMxDocument mxDocument)
-        {
-            if(mxDocument == null)
-            {
-            return;
-            }
-            ESRI.ArcGIS.Carto.IActiveView activeView = mxDocument.ActiveView; 
-
-            // Get the TOC
-            ESRI.ArcGIS.ArcMapUI.IContentsView IContentsView = mxDocument.CurrentContentsView;
-
-            // Get the selected layer
-            System.Object selectedItem = IContentsView.SelectedItem;
-            if (!(selectedItem is ESRI.ArcGIS.Carto.ILayer))
-            {
-            return;
-            }
-            ESRI.ArcGIS.Carto.ILayer layer = selectedItem as ESRI.ArcGIS.Carto.ILayer; 
-
-
-            // Zoom to the extent of the layer and refresh the map
-            activeView.Extent = layer.AreaOfInterest;
-            activeView.Refresh();
-        }
-
         protected override void OnClick()
         {            
             ESRI.ArcGIS.ArcMapUI.IMxDocument mxDocument = ArcMap.Application.Document as ESRI.ArcGIS.ArcMapUI.IMxDocument; // Dynamic Cast
             ESRI.ArcGIS.Carto.IActiveView activeView = mxDocument.ActiveView;
-
-            ZoomToActiveLayerInTOC(mxDocument as IMxDocument);
-
             ESRI.ArcGIS.Carto.IMap map = activeView.FocusMap;
+
+            int tileSizeX = 256;
+            int tileSizeY = 256;
+            
             map.DelayDrawing(true);
-            
-            // activeView.ExportFrame
-            
+
             // Turn off all layers
             for (int i = 0; i < map.LayerCount; i++)
                 map.get_Layer(i).Visible = false;
@@ -110,24 +79,21 @@ namespace ArcMapAddin1
             for (int lyrnum = 0; lyrnum < map.LayerCount; lyrnum++)
             {
                 // Turn on the layer of interest
-                map.get_Layer(lyrnum).Visible = true;
+                ESRI.ArcGIS.Carto.ILayer layer = map.get_Layer(lyrnum);
+                layer.Visible = true;
    
                 // Refresh and Zoom to the layer
-                //activeView.ExportFrame =
-                activeView.Extent = map.get_Layer(lyrnum).AreaOfInterest;
-                activeView.Refresh();
-
-                CreateTileFromActiveView(activeView, "e:\\workspace\\test_addin\\square_" + lyrnum + ".png", 256, 256);
-                CreateTileFromActiveView(activeView, "e:\\workspace\\test_addin\\wide_" + lyrnum + ".png", 800, 256);
-                CreateTileFromActiveView(activeView, "e:\\workspace\\test_addin\\tall_" + lyrnum + ".png", 256, 800);
+                // Use FullExtent instead of Extent to make the extent independent of the activeView ratio
+                activeView.FullExtent = layer.AreaOfInterest;
+                //TODO slugify name
+                CreateTileFromActiveView(activeView, "e:\\workspace\\test_addin\\" + layer.Name + ".png", tileSizeX, tileSizeY);
 
                 // Turn it off
-                map.get_Layer(lyrnum).Visible = false;
+                layer.Visible = false;
             }
 
+            activeView.Refresh();
             map.DelayDrawing(false);  
-            
-            //ArcMap.Application.CurrentTool = null;
         }
 
         protected override void OnUpdate()
