@@ -20,53 +20,6 @@ namespace ArcMapAddin1
         {
         }
 
-        ///<summary>Creates a .jpg (JPEG) file from the ActiveView using a high resolution exporting option. Default values of 96 DPI are overwritten to 300 used for the image creation.</summary>
-        ///
-        ///<param name="activeView">An IActiveView interface</param>
-        ///<param name="pathFileName">A System.String that the path and filename of the JPEG you want to create. Example: "C:\temp\hiResolutionTest.jpg"</param>
-        /// 
-        ///<returns>A System.Boolean indicating the success</returns>
-        /// 
-        ///<remarks></remarks>
-        public System.Boolean CreateJPEGHiResolutionFromActiveView(ESRI.ArcGIS.Carto.IActiveView activeView, System.String pathFileName)
-        {
-            //parameter check
-            if (activeView == null || !(pathFileName.EndsWith(".jpg")))
-            {
-                return false;
-            }
-            ESRI.ArcGIS.Output.IExport export = new ESRI.ArcGIS.Output.ExportJPEGClass();
-            export.ExportFileName = pathFileName;
-
-            // Because we are exporting to a resolution that differs from screen 
-            // resolution, we should assign the two values to variables for use 
-            // in our sizing calculations
-            System.Int32 screenResolution = 96;
-            System.Int32 outputResolution = 300;
-
-            export.Resolution = outputResolution;
-
-            //ESRI.ArcGIS.Display.tagRECT exportRECT; // This is a structure
-            ESRI.ArcGIS.esriSystem.tagRECT exportRECT;
-            exportRECT.left = 0;
-            exportRECT.top = 0;
-            exportRECT.right = activeView.ExportFrame.right * (outputResolution / screenResolution);
-            exportRECT.bottom = activeView.ExportFrame.bottom * (outputResolution / screenResolution);
-
-            // Set up the PixelBounds envelope to match the exportRECT
-            ESRI.ArcGIS.Geometry.IEnvelope envelope = new ESRI.ArcGIS.Geometry.EnvelopeClass();
-            envelope.PutCoords(exportRECT.left, exportRECT.top, exportRECT.right, exportRECT.bottom);
-            export.PixelBounds = envelope;
-
-            System.Int32 hDC = export.StartExporting();
-
-            activeView.Output(hDC, (System.Int16)export.Resolution, ref exportRECT, null, null); // Explicit Cast and 'ref' keyword needed 
-            export.FinishExporting();
-            export.Cleanup();
-
-            return true;
-        }
-
         ///<summary>Creates a tile 256x256.</summary>
         ///
         ///<param name="activeView">An IActiveView interface</param>
@@ -75,7 +28,7 @@ namespace ArcMapAddin1
         ///<returns>A System.Boolean indicating the success</returns>
         /// 
         ///<remarks></remarks>
-        public System.Boolean CreateTileFromActiveView(ESRI.ArcGIS.Carto.IActiveView activeView, System.String pathFileName)
+        public System.Boolean CreateTileFromActiveView(ESRI.ArcGIS.Carto.IActiveView activeView, System.String pathFileName, int tileSizeX, int tileSizeY)
         {
             //parameter check
             if (activeView == null || !(pathFileName.EndsWith(".jpg")))
@@ -85,20 +38,14 @@ namespace ArcMapAddin1
             ESRI.ArcGIS.Output.IExport export = new ESRI.ArcGIS.Output.ExportJPEGClass();
             export.ExportFileName = pathFileName;
 
-            // Because we are exporting to a resolution that differs from screen 
-            // resolution, we should assign the two values to variables for use 
-            // in our sizing calculations
-            System.Int32 screenResolution = 96;
-            System.Int32 outputResolution = 300;
-
-            export.Resolution = outputResolution;
+            export.Resolution = 300;
 
             //ESRI.ArcGIS.Display.tagRECT exportRECT; // This is a structure
             ESRI.ArcGIS.esriSystem.tagRECT exportRECT;
             exportRECT.left = 0;
             exportRECT.top = 0;
-            exportRECT.right = 256; // activeView.ExportFrame.right * (outputResolution / screenResolution);
-            exportRECT.bottom = 256; // activeView.ExportFrame.bottom * (outputResolution / screenResolution);
+            exportRECT.right = tileSizeX; // activeView.ExportFrame.right * (outputResolution / screenResolution);
+            exportRECT.bottom = tileSizeY; // activeView.ExportFrame.bottom * (outputResolution / screenResolution);
 
             // Set up the PixelBounds envelope to match the exportRECT
             ESRI.ArcGIS.Geometry.IEnvelope envelope = new ESRI.ArcGIS.Geometry.EnvelopeClass();
@@ -108,44 +55,6 @@ namespace ArcMapAddin1
             System.Int32 hDC = export.StartExporting();
 
             activeView.Output(hDC, (System.Int16)export.Resolution, ref exportRECT, null, null); // Explicit Cast and 'ref' keyword needed 
-            export.FinishExporting();
-            export.Cleanup();
-
-            return true;
-        }
-
-
-        ///<summary>Creates a .jpg (JPEG) file from IActiveView. Default values of 96 DPI are used for the image creation.</summary>
-        ///
-        ///<param name="activeView">An IActiveView interface</param>
-        ///<param name="pathFileName">A System.String that the path and filename of the JPEG you want to create. Example: "C:\temp\test.jpg"</param>
-        /// 
-        ///<returns>A System.Boolean indicating the success</returns>
-        /// 
-        ///<remarks></remarks>
-        public System.Boolean CreateJPEGFromActiveView(ESRI.ArcGIS.Carto.IActiveView activeView, System.String pathFileName)
-        {
-            //parameter check
-            if (activeView == null || !(pathFileName.EndsWith(".jpg")))
-            {
-                return false;
-            }
-            ESRI.ArcGIS.Output.IExport export = new ESRI.ArcGIS.Output.ExportJPEGClass();
-            export.ExportFileName = pathFileName;
-
-            // Microsoft Windows default DPI resolution
-            export.Resolution = 96;
-            ESRI.ArcGIS.esriSystem.tagRECT exportRECT = activeView.ExportFrame;
-            // um esri... THIS IS WRONG
-            // ESRI.ArcGIS.Display.tagRECT exportRECT = activeView.ExportFrame;
-
-            ESRI.ArcGIS.Geometry.IEnvelope envelope = new ESRI.ArcGIS.Geometry.EnvelopeClass();
-            envelope.PutCoords(exportRECT.left, exportRECT.top, exportRECT.right, exportRECT.bottom);
-            export.PixelBounds = envelope;
-            System.Int32 hDC = export.StartExporting();
-            activeView.Output(hDC, (System.Int16)export.Resolution, ref exportRECT, null, null);
-
-            // Finish writing the export file and cleanup any intermediate files
             export.FinishExporting();
             export.Cleanup();
 
@@ -183,38 +92,41 @@ namespace ArcMapAddin1
         }
 
         protected override void OnClick()
-        {
-
-            
+        {            
             ESRI.ArcGIS.ArcMapUI.IMxDocument mxDocument = ArcMap.Application.Document as ESRI.ArcGIS.ArcMapUI.IMxDocument; // Dynamic Cast
             ESRI.ArcGIS.Carto.IActiveView activeView = mxDocument.ActiveView;
 
             ZoomToActiveLayerInTOC(mxDocument as IMxDocument);
 
-
-
-
-
-
-
             ESRI.ArcGIS.Carto.IMap map = activeView.FocusMap;
             map.DelayDrawing(true);
             
+            // activeView.ExportFrame
+            
+            // Turn off all layers
+            for (int i = 0; i < map.LayerCount; i++)
+                map.get_Layer(i).Visible = false;
+
             for (int lyrnum = 0; lyrnum < map.LayerCount; lyrnum++)
             {
+                // Turn on the layer of interest
+                map.get_Layer(lyrnum).Visible = true;
+   
                 // Refresh and Zoom to the layer
+                //activeView.
                 activeView.Extent = map.get_Layer(lyrnum).AreaOfInterest;
-                //activeView.Refresh();
-                CreateTileFromActiveView(activeView, "e:\\workspace\\test_addin\\" + lyrnum + ".jpg");
-          
+                activeView.Refresh();
+
+                CreateTileFromActiveView(activeView, "e:\\workspace\\test_addin\\square_" + lyrnum + ".jpg", 256, 256);
+                CreateTileFromActiveView(activeView, "e:\\workspace\\test_addin\\wide_" + lyrnum + ".jpg", 800, 256);
+
+                CreateTileFromActiveView(activeView, "e:\\workspace\\test_addin\\tall_" + lyrnum + ".jpg", 256, 800);
+
+                // Turn it off
+                map.get_Layer(lyrnum).Visible = false;
             }
-            map.DelayDrawing(false);
 
-
-
-
-
-            System.Boolean test = CreateJPEGHiResolutionFromActiveView(activeView, "e:\\workspace\\test.jpg");
+            map.DelayDrawing(false);  
             
             //ArcMap.Application.CurrentTool = null;
         }
