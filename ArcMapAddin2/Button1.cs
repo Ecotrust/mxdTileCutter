@@ -31,11 +31,11 @@ namespace ArcMapAddin1
         public System.Boolean CreateTileFromActiveView(ESRI.ArcGIS.Carto.IActiveView activeView, System.String pathFileName, int tileSizeX, int tileSizeY)
         {
             //parameter check
-            if (activeView == null || !(pathFileName.EndsWith(".jpg")))
+            if (activeView == null || !(pathFileName.EndsWith(".png")))
             {
                 return false;
             }
-            ESRI.ArcGIS.Output.IExport export = new ESRI.ArcGIS.Output.ExportJPEGClass();
+            ESRI.ArcGIS.Output.IExport export = new ESRI.ArcGIS.Output.ExportPNGClass();
             export.ExportFileName = pathFileName;
 
             export.Resolution = 300;
@@ -113,14 +113,13 @@ namespace ArcMapAddin1
                 map.get_Layer(lyrnum).Visible = true;
    
                 // Refresh and Zoom to the layer
-                //activeView.
+                //activeView.ExportFrame =
                 activeView.Extent = map.get_Layer(lyrnum).AreaOfInterest;
                 activeView.Refresh();
 
-                CreateTileFromActiveView(activeView, "e:\\workspace\\test_addin\\square_" + lyrnum + ".jpg", 256, 256);
-                CreateTileFromActiveView(activeView, "e:\\workspace\\test_addin\\wide_" + lyrnum + ".jpg", 800, 256);
-
-                CreateTileFromActiveView(activeView, "e:\\workspace\\test_addin\\tall_" + lyrnum + ".jpg", 256, 800);
+                CreateTileFromActiveView(activeView, "e:\\workspace\\test_addin\\square_" + lyrnum + ".png", 256, 256);
+                CreateTileFromActiveView(activeView, "e:\\workspace\\test_addin\\wide_" + lyrnum + ".png", 800, 256);
+                CreateTileFromActiveView(activeView, "e:\\workspace\\test_addin\\tall_" + lyrnum + ".png", 256, 800);
 
                 // Turn it off
                 map.get_Layer(lyrnum).Visible = false;
