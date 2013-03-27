@@ -10,7 +10,7 @@
   <Targets>
     <Target name="Desktop" version="10.1" />
   </Targets>
-  <AddIn language="CLR4.0" library="ArcMapAddin2.dll" namespace="ArcMapAddin1">
+  <AddIn language="CLR4.0" library="ArcMapAddin2.dll" namespace="Ecotrust">
     <ArcMap>
       <Commands>
         <Button id="Microsoft_ArcMapAddin1_Button1" class="Button1" 

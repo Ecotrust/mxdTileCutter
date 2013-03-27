@@ -12,7 +12,7 @@ using ESRI.ArcGIS.Geometry;
 using ESRI.ArcGIS.Display;
 using ESRI.ArcGIS.Output;
 
-namespace ArcMapAddin1
+namespace Ecotrust
 {
     public class Button1 : ESRI.ArcGIS.Desktop.AddIns.Button
     {
@@ -81,6 +81,10 @@ namespace ArcMapAddin1
 
             map.DelayDrawing(true);
 
+            // TODO make variables
+            int minzoom = 0;
+            int maxzoom = 4;
+
             // Turn off all layers
             for (int i = 0; i < map.LayerCount; i++)
                 map.get_Layer(i).Visible = false;
@@ -92,25 +96,75 @@ namespace ArcMapAddin1
                 layer.Visible = true;
 
                 // Set extents
-                //ESRI.ArcGIS.Geometry.Envelope aoi = layer.AreaOfInterest;
+                ESRI.ArcGIS.Geometry.IEnvelope layeraoi = layer.AreaOfInterest;
                 ESRI.ArcGIS.Geometry.IEnvelope aoi = new ESRI.ArcGIS.Geometry.EnvelopeClass();
 
                 /* TODO Loop through zoom levels, rows, cols 
                  * 
                  */
-                    export.ExportFileName = "e:\\workspace\\test_addin\\" + layer.Name + ".png";
+                for (int tz = minzoom; tz <= maxzoom; tz++)
+                {
+                    /* PYTHON
+                     * 
+                    print " * Processing Zoom Level %s" % tz
+                    tminx, tminy = mercator.MetersToTile( bbox[0], bbox[2], tz)
+                    tmaxx, tmaxy = mercator.MetersToTile( bbox[1], bbox[3], tz)
+                    for ty in range(tminy, tmaxy+1):
+                        for tx in range(tminx, tmaxx+1):
+                     * 
+                     */
+                    GlobalMercator mercator = new GlobalMercator();
+                    //GlobalMercator.Coords mins = mercator.MetersToTile(layeraoi.XMin, layeraoi.YMin, tz);
+                    //GlobalMercator.Coords maxs = mercator.MetersToTile(layeraoi.XMax, layeraoi.YMax, tz); // extent needs to be mercator
+                    GlobalMercator.Coords mins = mercator.MetersToTile(-14832493.1523, 4309673.4917, tz);
+                    GlobalMercator.Coords maxs = mercator.MetersToTile(-12232493.1523, 6909673.4917, tz);
+                    int tileCount = 0;
+                    for (int ty = (int)mins.y; ty <= (int)maxs.y; ty++) 
+                    {
+                        for (int tx = (int)mins.x; tx <= (int)maxs.x; tx++)
+                        {
+                            tileCount += 1;
+                            
+                            export.ExportFileName = "e:\\workspace\\test_addin\\" + tz + "_" + tx + "_" + ty + "_" + layer.Name + ".png";
+                            //aoi.PutCoords(exportRECT.left, exportRECT.top, exportRECT.right, exportRECT.bottom);
+
+                            // TODO get tile coords from GlobalMercator.TileBounds
+                            GlobalMercator.Bounds bnd = mercator.TileBounds(tx, ty, tz);
+                            aoi.PutCoords(bnd.minx, bnd.miny, bnd.maxx, bnd.maxy);
+                            //aoi.PutCoords(-13832493.1523, 5309673.4917, -13232493.1523, 5909673.4917);
+                            aoi.SpatialReference = map.SpatialReference; // TODO aoi spatial reference == mercator?
+                            // Use FullExtent instead of Extent to make the extent independent of the activeView ratio
+                            activeView.FullExtent = aoi;
+
+                            // Export
+                            System.Int32 hDC = export.StartExporting();
+                            activeView.Output(hDC, (System.Int16)export.Resolution, ref exportRECT, null, null); // Explicit Cast and 'ref' keyword needed 
+                            export.FinishExporting();
+                            export.Cleanup();
+                            
+                        }                    
+                    }
+                    using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"E:\\workspace\\test_addin\\test.txt", true))
+                    {
+                        file.WriteLine(layer.Name + ", zoom " + tz + ", numtiles " + tileCount + ":" + 
+                          mins.x + " " + mins.y + " " + maxs.x + " " + maxs.y);
+                    }
+
+                    /*
+                    export.ExportFileName = "e:\\workspace\\test_addin\\" + tz + "_" + layer.Name + ".png";
                     //aoi.PutCoords(exportRECT.left, exportRECT.top, exportRECT.right, exportRECT.bottom);
-                    aoi.PutCoords(-13832493.1523, 5909673.4917, -13232493.1523, 5309673.4917);
+                    aoi.PutCoords(-13832493.1523, 5309673.4917, -13232493.1523, 5909673.4917);
                     aoi.SpatialReference = map.SpatialReference; // TODO aoi spatial reference == mercator?
                     // Use FullExtent instead of Extent to make the extent independent of the activeView ratio
                     activeView.FullExtent = aoi;
-                
+
                     // Export
                     System.Int32 hDC = export.StartExporting();
                     activeView.Output(hDC, (System.Int16)export.Resolution, ref exportRECT, null, null); // Explicit Cast and 'ref' keyword needed 
                     export.FinishExporting();
                     export.Cleanup();
-
+                     */
+                }
                 // Turn it off
                 layer.Visible = false;
             }
