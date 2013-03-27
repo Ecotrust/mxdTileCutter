@@ -117,26 +117,14 @@ namespace Ecotrust
                             
                         }                    
                     }
+
+                    // Write lod
                     using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"E:\\workspace\\test_addin\\test.txt", true))
                     {
                         file.WriteLine(layer.Name + ", zoom " + tz + ", numtiles " + tileCount + ":" + 
                           mins.x + " " + mins.y + " " + maxs.x + " " + maxs.y);
                     }
 
-                    /*
-                    export.ExportFileName = "e:\\workspace\\test_addin\\" + tz + "_" + layer.Name + ".png";
-                    //aoi.PutCoords(exportRECT.left, exportRECT.top, exportRECT.right, exportRECT.bottom);
-                    aoi.PutCoords(-13832493.1523, 5309673.4917, -13232493.1523, 5909673.4917);
-                    aoi.SpatialReference = map.SpatialReference; // TODO aoi spatial reference == mercator?
-                    // Use FullExtent instead of Extent to make the extent independent of the activeView ratio
-                    activeView.FullExtent = aoi;
-
-                    // Export
-                    System.Int32 hDC = export.StartExporting();
-                    activeView.Output(hDC, (System.Int16)export.Resolution, ref exportRECT, null, null); // Explicit Cast and 'ref' keyword needed 
-                    export.FinishExporting();
-                    export.Cleanup();
-                     */
                 }
                 // Turn it off
                 layer.Visible = false;
