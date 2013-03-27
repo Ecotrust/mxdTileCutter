@@ -55,8 +55,17 @@ namespace ArcMapAddin1
    
                 // Refresh and Zoom to the layer
                 // Use FullExtent instead of Extent to make the extent independent of the activeView ratio
+
                 // TODO instead of AreaOfInterest, try a hardcoded extent
-                activeView.FullExtent = layer.AreaOfInterest;
+                //activeView.FullExtent = layer.AreaOfInterest;
+
+                //ESRI.ArcGIS.Geometry.Envelope aoi = layer.AreaOfInterest;
+                ESRI.ArcGIS.Geometry.IEnvelope aoi = new ESRI.ArcGIS.Geometry.EnvelopeClass();
+                //aoi.PutCoords(exportRECT.left, exportRECT.top, exportRECT.right, exportRECT.bottom);
+                aoi.PutCoords(-13832493.1523, 5909673.4917, -13232493.1523, 5309673.4917);
+                aoi.SpatialReference = map.SpatialReference;
+                // TODO aoi spatial reference
+                activeView.FullExtent = aoi;
                 
                 // Export
                 System.Int32 hDC = export.StartExporting();
