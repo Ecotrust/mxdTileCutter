@@ -26,50 +26,24 @@ namespace Ecotrust
             ESRI.ArcGIS.Carto.IActiveView activeView = mxDocument.ActiveView;
             ESRI.ArcGIS.Carto.IMap map = activeView.FocusMap;
 
+            ESRI.ArcGIS.Geometry.IEnvelope mapaoi = activeView.Extent;
+
             // Set up export object and tile pixel coordinates
             int tileSizeX = 256;
             int tileSizeY = 256;
 
-            /*
-            ESRI.ArcGIS.Output.ExportPNG pngexport = new ESRI.ArcGIS.Output.ExportPNGClass();
-            pngexport.BackgroundColor.NullColor = true;
-            ESRI.ArcGIS.Output.IExport export = (ESRI.ArcGIS.Output.IExport)pngexport;
-            */
-
+            // set up exporter 
             ESRI.ArcGIS.Output.ExportPNG pngexport = new ESRI.ArcGIS.Output.ExportPNGClass();
             ESRI.ArcGIS.Display.IColor tcolor = new ESRI.ArcGIS.Display.RgbColorClass();
             ((IRgbColor)tcolor).Red = 255;
             ((IRgbColor)tcolor).Green = 0;
             ((IRgbColor)tcolor).Blue = 0;
+            // TODO set transparency, 32 bit png
             ((IRgbColor)tcolor).Transparency = 0;  // Doesn't work?
             pngexport.BackgroundColor = tcolor;
             ((IExportPNG)pngexport).TransparentColor = tcolor;
             ESRI.ArcGIS.Output.IExport export = (ESRI.ArcGIS.Output.IExport)pngexport;
             
-            
-            // ***************************
-            // TODO set transparency, 32 bit png
-            // ESRI.ArcGIS.Carto.esriImageFormat.esriImagePNG32;            
-            //ESRI.ArcGIS.Output.IExport export = new ESRI.ArcGIS.Output.ExportPNGClass();
-            //ESRI.ArcGIS.Output.IExport export = (ESRI.ArcGIS.Output.IExport)xpk;
-            //export.ImageType = (ESRI.ArcGIS.Output.esriExportImageType)ESRI.ArcGIS.Carto.esriImageFormat.esriImagePNG32;
-            //
-            //export.TransparentColor.Transparency = (byte)255;
-            //export.BackgroundColor.Transparency = (byte)0;
-            //export.BackgroundColor.
-
-            /*
-             * IExportPNG pngExport = new ExportPNGClass();
-                    export = (IExport)pngExport;
-
-             * 
-             *             pngExport.TransparentColor.Transparency = 0;
-            
-            ESRI.ArcGIS.Output.IExport export = (ESRI.ArcGIS.Output.IExport)pngExport;break;
-             */
-
-            //export.ImageType = (ESRI.ArcGIS.Output.esriExportImageType)32;
-            // ***************************
             ESRI.ArcGIS.esriSystem.tagRECT exportRECT;
             exportRECT.left = 0;
             exportRECT.top = 0;
@@ -96,42 +70,41 @@ namespace Ecotrust
                 layer.Visible = true;
 
                 // Set extents
-                ESRI.ArcGIS.Geometry.IEnvelope layeraoi = layer.AreaOfInterest;
+                //ESRI.ArcGIS.Geometry.IEnvelope layeraoi = layer.AreaOfInterest;
                 ESRI.ArcGIS.Geometry.IEnvelope aoi = new ESRI.ArcGIS.Geometry.EnvelopeClass();
 
-                /* TODO Loop through zoom levels, rows, cols 
-                 * 
-                 */
+                // Create layer directory if it doesn't exist
+                DirectoryInfo dir = new DirectoryInfo("e:\\workspace\\test_addin\\" + layer.Name);
+                if (!dir.Exists)
+                    dir.Create();
+                    
+                // Loop through zoom levels, rows, cols 
                 for (int tz = minzoom; tz <= maxzoom; tz++)
-                {
-                    /* PYTHON
-                     * 
-                    print " * Processing Zoom Level %s" % tz
-                    tminx, tminy = mercator.MetersToTile( bbox[0], bbox[2], tz)
-                    tmaxx, tmaxy = mercator.MetersToTile( bbox[1], bbox[3], tz)
-                    for ty in range(tminy, tmaxy+1):
-                        for tx in range(tminx, tmaxx+1):
-                     * 
-                     */
+                {    
                     GlobalMercator mercator = new GlobalMercator();
-                    //GlobalMercator.Coords mins = mercator.MetersToTile(layeraoi.XMin, layeraoi.YMin, tz);
-                    //GlobalMercator.Coords maxs = mercator.MetersToTile(layeraoi.XMax, layeraoi.YMax, tz); // extent needs to be mercator
-                    GlobalMercator.Coords mins = mercator.MetersToTile(-14832493.1523, 4309673.4917, tz);
-                    GlobalMercator.Coords maxs = mercator.MetersToTile(-12232493.1523, 6909673.4917, tz);
+                    GlobalMercator.Coords mins = mercator.MetersToTile(mapaoi.XMin, mapaoi.YMin, tz);
+                    GlobalMercator.Coords maxs = mercator.MetersToTile(mapaoi.XMax, mapaoi.YMax, tz); // map extent needs to be mercator
                     int tileCount = 0;
-                    for (int ty = (int)mins.y; ty <= (int)maxs.y; ty++) 
+
+                    // Create zoom directory if it doesn't exist
+                    DirectoryInfo dir2 = new DirectoryInfo(dir.FullName + "\\" + tz);
+                    if (!dir2.Exists)
+                        dir2.Create();
+
+                    for (int tx = (int)mins.x; tx <= (int)maxs.x; tx++) 
                     {
-                        for (int tx = (int)mins.x; tx <= (int)maxs.x; tx++)
+                        // Create X directory if it doesn't exist
+                        DirectoryInfo dir3 = new DirectoryInfo(dir2.FullName + "\\" + tx);
+                        if (!dir3.Exists)
+                            dir3.Create();
+
+                        for (int ty = (int)mins.y; ty <= (int)maxs.y; ty++)
                         {
                             tileCount += 1;
                             
-                            export.ExportFileName = "e:\\workspace\\test_addin\\" + tz + "_" + tx + "_" + ty + "_" + layer.Name + ".png";
-                            //aoi.PutCoords(exportRECT.left, exportRECT.top, exportRECT.right, exportRECT.bottom);
-
-                            // TODO get tile coords from GlobalMercator.TileBounds
+                            export.ExportFileName = dir3.FullName + "\\" + ty + ".png";
                             GlobalMercator.Bounds bnd = mercator.TileBounds(tx, ty, tz);
                             aoi.PutCoords(bnd.minx, bnd.miny, bnd.maxx, bnd.maxy);
-                            //aoi.PutCoords(-13832493.1523, 5309673.4917, -13232493.1523, 5909673.4917);
                             aoi.SpatialReference = map.SpatialReference; // TODO aoi spatial reference == mercator?
                             // Use FullExtent instead of Extent to make the extent independent of the activeView ratio
                             activeView.FullExtent = aoi;
