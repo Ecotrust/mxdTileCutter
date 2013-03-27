@@ -57,7 +57,7 @@ namespace Ecotrust
 
             // TODO make variables
             int minzoom = 0;
-            int maxzoom = 4;
+            int maxzoom = 6;
 
             // Turn off all layers
             for (int i = 0; i < map.LayerCount; i++)
@@ -130,11 +130,13 @@ namespace Ecotrust
                 layer.Visible = false;
             }
 
+            map.DelayDrawing(false);
+
             // Turn ON all layers
             for (int i = 0; i < map.LayerCount; i++)
                 map.get_Layer(i).Visible = true;
-            
-            map.DelayDrawing(false);  
+
+            activeView.Extent = mapaoi; // restore extent
             activeView.Refresh();
         }
 

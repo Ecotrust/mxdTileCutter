@@ -6,18 +6,22 @@
   <Image>Images\ArcMapAddin1.png</Image>
   <Author>mperry</Author>
   <Company>Microsoft</Company>
-  <Date>3/23/2013</Date>
+  <Date>3/27/2013</Date>
   <Targets>
     <Target name="Desktop" version="10.1" />
   </Targets>
   <AddIn language="CLR4.0" library="ArcMapAddin2.dll" namespace="Ecotrust">
     <ArcMap>
       <Commands>
-        <Button id="Microsoft_ArcMapAddin1_Button1" class="Button1" 
-                message="Matt's Button Customization" 
-                caption="Matt's Button" tip="Add-in command tooltip." category="Add-In Controls" 
-                image="Images\Button1.png" />
+        <Button id="Microsoft_ArcMapAddin1_Button1" class="Button1" message="Matt's Button Customization" caption="Matt's Button" tip="Add-in command tooltip." category="Add-In Controls" image="Images\Button1.png" />
       </Commands>
+      <Toolbars>
+        <Toolbar id="Microsoft_Ecotrust_Ecotrust_Toolbar" caption="Ecotrust Toolbar" showInitially="true">
+          <Items>
+            <Button refID="Microsoft_ArcMapAddin1_Button1" />
+          </Items>
+        </Toolbar>
+      </Toolbars>
     </ArcMap>
   </AddIn>
 </ESRI.Configuration>
