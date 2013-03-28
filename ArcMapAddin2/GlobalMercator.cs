@@ -59,12 +59,20 @@ namespace Ecotrust
             return outc;
         }
 
-        public Coords MetersToTile(Double mx, Double my, int zoom)
+        public Coords MetersToTMSTile(Double mx, Double my, int zoom)
         {
-            // Returns tile for given mercator coordinates
-            // TODO FLIP Y!!!!!
+            // Returns tile coords for given mercator coordinates
             Coords tempc = MetersToPixels(mx, my, zoom);
             Coords outc = PixelsToTile(tempc);
+            return outc;
+        }
+
+        public Coords MetersToXYZTile(Double mx, Double my, int zoom)
+        {
+            // Returns XYZ (top-origin) tile for given mercator coordinates
+            Coords tempc = MetersToPixels(mx, my, zoom);
+            Coords outc = PixelsToTile(tempc);
+            outc.y = (Math.Pow(2, zoom) - 1) - outc.y; // flip y axis
             return outc;
         }
 

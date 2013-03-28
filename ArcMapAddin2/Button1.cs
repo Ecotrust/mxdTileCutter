@@ -15,11 +15,10 @@ using ESRI.ArcGIS.Output;
 /*
  * TODO list
  * 
- * flip Y coordinate
  * openlayers output
  * json output
  * sanity checking
- * projections
+ * projection (map, layers)
  * min/max zoom as user input
  * base url as user input
  * avoid negative tile coords when zoomed to full earth extent
@@ -105,8 +104,8 @@ namespace Ecotrust
             Double numTiles = 0;
             for (int tz = minzoom; tz <= maxzoom; tz++)
             {
-                tempmins = mercator.MetersToTile(mapaoi.XMin, mapaoi.YMin, tz);
-                tempmaxs = mercator.MetersToTile(mapaoi.XMax, mapaoi.YMax, tz); // map extent needs to be mercator
+                tempmins = mercator.MetersToXYZTile(mapaoi.XMin, mapaoi.YMax, tz); // ymax bc of y coord flip
+                tempmaxs = mercator.MetersToXYZTile(mapaoi.XMax, mapaoi.YMin, tz); 
                 numTiles += ((tempmaxs.y - tempmins.y)+1) * ((tempmaxs.x - tempmins.x)+1);
             }
             numTiles *= map.LayerCount;
@@ -156,8 +155,8 @@ namespace Ecotrust
                 // Loop through zoom levels, rows, cols 
                 for (int tz = minzoom; tz <= maxzoom; tz++)
                 {    
-                    GlobalMercator.Coords mins = mercator.MetersToTile(mapaoi.XMin, mapaoi.YMin, tz);
-                    GlobalMercator.Coords maxs = mercator.MetersToTile(mapaoi.XMax, mapaoi.YMax, tz); // map extent needs to be mercator
+                    GlobalMercator.Coords mins = mercator.MetersToXYZTile(mapaoi.XMin, mapaoi.YMax, tz); // ymax bc of y coord flip
+                    GlobalMercator.Coords maxs = mercator.MetersToXYZTile(mapaoi.XMax, mapaoi.YMin, tz); // map extent needs to be mercator
                     int tileCount = 0;
 
                     // Create zoom directory if it doesn't exist
