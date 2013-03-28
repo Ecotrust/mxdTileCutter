@@ -99,6 +99,30 @@ namespace Ecotrust
             ESRI.ArcGIS.esriSystem.IStatusBar statusBar = ArcMap.Application.StatusBar;
             statusBar.set_Message(0, "Calculating " + numTiles.ToString() + " tiles");
 
+            // Create a CancelTracker
+            ESRI.ArcGIS.esriSystem.ITrackCancel trackCancel = new ESRI.ArcGIS.Display.CancelTrackerClass();
+
+            ESRI.ArcGIS.Framework.IProgressDialogFactory progressDialogFactory = new ESRI.ArcGIS.Framework.ProgressDialogFactoryClass();
+
+            // Set the properties of the Step Progressor
+            System.Int32 int32_hWnd = ArcMap.Application.hWnd;
+            ESRI.ArcGIS.esriSystem.IStepProgressor stepProgressor = progressDialogFactory.Create(trackCancel, int32_hWnd);
+            stepProgressor.MinRange = 0;
+            stepProgressor.MaxRange = (int)numTiles;
+            stepProgressor.StepValue = 1;
+            stepProgressor.Message = "Calculating " + numTiles.ToString() + " tiles";
+
+            // Create the ProgressDialog. This automatically displays the dialog
+            ESRI.ArcGIS.Framework.IProgressDialog2 progressDialog2 = (ESRI.ArcGIS.Framework.IProgressDialog2)stepProgressor; // Explict Cast
+
+            // Set the properties of the ProgressDialog
+            progressDialog2.CancelEnabled = true;
+            progressDialog2.Description = "Rendering " + numTiles.ToString() + " map tiles";
+            progressDialog2.Title = "Creating map tiles...";
+            progressDialog2.Animation = ESRI.ArcGIS.Framework.esriProgressAnimationTypes.esriDownloadFile;
+            System.Boolean boolean_Continue = false;
+            boolean_Continue = true;
+
             for (int lyrnum = 0; lyrnum < map.LayerCount; lyrnum++)
             {
                 // Turn on the layer of interest
@@ -136,6 +160,7 @@ namespace Ecotrust
                         for (int ty = (int)mins.y; ty <= (int)maxs.y; ty++)
                         {
                             tileCount += 1;
+                            stepProgressor.Message = layer.Name + " " + tz + " " + tx + " " + ty;
                             
                             export.ExportFileName = dir3.FullName + "\\" + ty + ".png";
                             GlobalMercator.Bounds bnd = mercator.TileBounds(tx, ty, tz);
@@ -149,12 +174,12 @@ namespace Ecotrust
                             activeView.Output(hDC, (System.Int16)export.Resolution, ref exportRECT, null, null); // Explicit Cast and 'ref' keyword needed 
                             export.FinishExporting();
                             export.Cleanup();
-                            
+                            stepProgressor.Step();
                         }                    
                     }
 
                     // Write lod
-                    using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"E:\\workspace\\test_addin\\test.txt", true))
+                    using (System.IO.StreamWriter file = new System.IO.StreamWriter( exportDir + "\\test.txt", true))
                     {
                         file.WriteLine(layer.Name + ", zoom " + tz + ", numtiles " + tileCount + ":" + 
                           mins.x + " " + mins.y + " " + maxs.x + " " + maxs.y);
@@ -173,6 +198,13 @@ namespace Ecotrust
 
             activeView.Extent = mapaoi; // restore extent
             activeView.Refresh();
+
+            // Done
+            trackCancel = null;
+            stepProgressor = null;
+            progressDialog2.HideDialog();
+            progressDialog2 = null;
+
         }
 
         protected override void OnUpdate()

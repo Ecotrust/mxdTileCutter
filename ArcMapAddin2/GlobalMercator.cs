@@ -62,7 +62,7 @@ namespace Ecotrust
         public Coords MetersToTile(Double mx, Double my, int zoom)
         {
             // Returns tile for given mercator coordinates
-        
+            // TODO FLIP Y!!!!!
             Coords tempc = MetersToPixels(mx, my, zoom);
             Coords outc = PixelsToTile(tempc);
             return outc;
