@@ -12,6 +12,7 @@ using ESRI.ArcGIS.Geometry;
 using ESRI.ArcGIS.Display;
 using ESRI.ArcGIS.Output;
 
+
 namespace Ecotrust
 {
     public class Button1 : ESRI.ArcGIS.Desktop.AddIns.Button
@@ -21,7 +22,25 @@ namespace Ecotrust
         }
 
         protected override void OnClick()
-        {            
+        {
+            // Use the OpenFileDialog Class to choose export folder
+            System.Windows.Forms.FolderBrowserDialog folderDialog = new System.Windows.Forms.FolderBrowserDialog();
+            folderDialog.Description = "Select output folder for map tiles...";
+            string exportDir = "";
+            if (folderDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                // The returned string will be the full path, filename and file-extension for the chosen shapefile. Example: "C:\test\cities.shp"
+                exportDir = folderDialog.SelectedPath;
+                if (exportDir == "")
+                    return;  // TODO raise error
+            }
+            else
+            {
+                return; //TODO 
+            }
+
+            // TODO progress dialog
+
             ESRI.ArcGIS.ArcMapUI.IMxDocument mxDocument = ArcMap.Application.Document as ESRI.ArcGIS.ArcMapUI.IMxDocument; // Dynamic Cast
             ESRI.ArcGIS.Carto.IActiveView activeView = mxDocument.ActiveView;
             ESRI.ArcGIS.Carto.IMap map = activeView.FocusMap;
@@ -74,7 +93,7 @@ namespace Ecotrust
                 ESRI.ArcGIS.Geometry.IEnvelope aoi = new ESRI.ArcGIS.Geometry.EnvelopeClass();
 
                 // Create layer directory if it doesn't exist
-                DirectoryInfo dir = new DirectoryInfo("e:\\workspace\\test_addin\\" + layer.Name);
+                DirectoryInfo dir = new DirectoryInfo(exportDir  + "\\" + layer.Name);
                 if (!dir.Exists)
                     dir.Create();
                     
