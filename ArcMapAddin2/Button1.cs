@@ -18,11 +18,14 @@ using ESRI.ArcGIS.Output;
  * flip Y coordinate
  * openlayers output
  * json output
- * cancel
  * sanity checking
  * projections
- * min/max zom as user input
- * remember last directory
+ * min/max zoom as user input
+ * base url as user input
+ * avoid negative tile coords when zoomed to full earth extent
+ * transparency 
+ * avoid outputing blank tiles?
+ * confirm alignment and tile coordinates
  * 
  */ 
 
@@ -187,11 +190,24 @@ namespace Ecotrust
                             export.FinishExporting();
                             export.Cleanup();
                             stepProgressor.Step();
-                        }                    
-                    }
 
-                    // Write lod
-                    using (System.IO.StreamWriter file = new System.IO.StreamWriter( exportDir + "\\test.txt", true))
+                            //Check if the cancel button was pressed. If so, break out of row
+                            boolean_Continue = trackCancel.Continue();
+                            if (!boolean_Continue)
+                                break;
+                        }
+                        //Check if the cancel button was pressed. If so, break out of col
+                        boolean_Continue = trackCancel.Continue();
+                        if (!boolean_Continue)
+                            break;                  
+                    }
+                    //Check if the cancel button was pressed. If so, break out of layers
+                    boolean_Continue = trackCancel.Continue();
+                    if (!boolean_Continue)
+                        break;
+
+                    // Write log
+                    using (System.IO.StreamWriter file = new System.IO.StreamWriter( exportDir + "\\log.txt", true))
                     {
                         file.WriteLine(layer.Name + ", zoom " + tz + ", numtiles " + tileCount + ":" + 
                           mins.x + " " + mins.y + " " + maxs.x + " " + maxs.y);
