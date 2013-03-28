@@ -26,6 +26,7 @@ namespace Ecotrust
             // Use the OpenFileDialog Class to choose export folder
             System.Windows.Forms.FolderBrowserDialog folderDialog = new System.Windows.Forms.FolderBrowserDialog();
             folderDialog.Description = "Select output folder for map tiles...";
+            //folderDialog.RootFolder = @"C:\\"; // TODO
             string exportDir = "";
             if (folderDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
@@ -74,13 +75,29 @@ namespace Ecotrust
 
             map.DelayDrawing(true);
 
-            // TODO make variables
+            // TODO make user input variables
             int minzoom = 0;
             int maxzoom = 6;
 
             // Turn off all layers
             for (int i = 0; i < map.LayerCount; i++)
                 map.get_Layer(i).Visible = false;
+            
+            // Calculate total number of tiles needed
+            GlobalMercator mercator = new GlobalMercator();
+            GlobalMercator.Coords tempmins;
+            GlobalMercator.Coords tempmaxs;
+            Double numTiles = 0;
+            for (int tz = minzoom; tz <= maxzoom; tz++)
+            {
+                tempmins = mercator.MetersToTile(mapaoi.XMin, mapaoi.YMin, tz);
+                tempmaxs = mercator.MetersToTile(mapaoi.XMax, mapaoi.YMax, tz); // map extent needs to be mercator
+                numTiles += ((tempmaxs.y - tempmins.y)+1) * ((tempmaxs.x - tempmins.x)+1);
+            }
+            numTiles *= map.LayerCount;
+
+            ESRI.ArcGIS.esriSystem.IStatusBar statusBar = ArcMap.Application.StatusBar;
+            statusBar.set_Message(0, "Calculating " + numTiles.ToString() + " tiles");
 
             for (int lyrnum = 0; lyrnum < map.LayerCount; lyrnum++)
             {
@@ -100,7 +117,6 @@ namespace Ecotrust
                 // Loop through zoom levels, rows, cols 
                 for (int tz = minzoom; tz <= maxzoom; tz++)
                 {    
-                    GlobalMercator mercator = new GlobalMercator();
                     GlobalMercator.Coords mins = mercator.MetersToTile(mapaoi.XMin, mapaoi.YMin, tz);
                     GlobalMercator.Coords maxs = mercator.MetersToTile(mapaoi.XMax, mapaoi.YMax, tz); // map extent needs to be mercator
                     int tileCount = 0;
