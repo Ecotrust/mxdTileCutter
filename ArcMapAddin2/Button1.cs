@@ -12,6 +12,19 @@ using ESRI.ArcGIS.Geometry;
 using ESRI.ArcGIS.Display;
 using ESRI.ArcGIS.Output;
 
+/*
+ * TODO list
+ * 
+ * flip Y coordinate
+ * openlayers output
+ * json output
+ * cancel
+ * sanity checking
+ * projections
+ * min/max zom as user input
+ * remember last directory
+ * 
+ */ 
 
 namespace Ecotrust
 {
@@ -26,6 +39,7 @@ namespace Ecotrust
             // Use the OpenFileDialog Class to choose export folder
             System.Windows.Forms.FolderBrowserDialog folderDialog = new System.Windows.Forms.FolderBrowserDialog();
             folderDialog.Description = "Select output folder for map tiles...";
+            
             //folderDialog.RootFolder = @"C:\\"; // TODO
             string exportDir = "";
             if (folderDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
@@ -39,8 +53,6 @@ namespace Ecotrust
             {
                 return; //TODO 
             }
-
-            // TODO progress dialog
 
             ESRI.ArcGIS.ArcMapUI.IMxDocument mxDocument = ArcMap.Application.Document as ESRI.ArcGIS.ArcMapUI.IMxDocument; // Dynamic Cast
             ESRI.ArcGIS.Carto.IActiveView activeView = mxDocument.ActiveView;
