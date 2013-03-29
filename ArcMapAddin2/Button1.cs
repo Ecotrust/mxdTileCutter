@@ -38,6 +38,20 @@ namespace Ecotrust
 
         protected override void OnClick()
         {
+            // Get the min/max zoom from user input
+            int minzoom = 0;
+            int maxzoom = 6;
+            Ecotrust.Form1 form1 = new Ecotrust.Form1();
+            if (form1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                minzoom = (int)form1.numericUpDown1.Value;
+                maxzoom = (int)form1.numericUpDown2.Value;
+            }
+            else
+            {
+                return; //TODO 
+            }
+
             // Use the OpenFileDialog Class to choose export folder
             System.Windows.Forms.FolderBrowserDialog folderDialog = new System.Windows.Forms.FolderBrowserDialog();
             folderDialog.Description = "Select output folder for map tiles...";
@@ -89,10 +103,6 @@ namespace Ecotrust
 
             map.DelayDrawing(true);
 
-            // TODO make user input variables
-            int minzoom = 0;
-            int maxzoom = 6;
-
             // Turn off all layers
             for (int i = 0; i < map.LayerCount; i++)
                 map.get_Layer(i).Visible = false;
@@ -111,7 +121,7 @@ namespace Ecotrust
             numTiles *= map.LayerCount;
 
             ESRI.ArcGIS.esriSystem.IStatusBar statusBar = ArcMap.Application.StatusBar;
-            statusBar.set_Message(0, "Calculating " + numTiles.ToString() + " tiles");
+            statusBar.set_Message(0, "Rendering " + numTiles.ToString() + " tiles");
 
             // Create a CancelTracker
             ESRI.ArcGIS.esriSystem.ITrackCancel trackCancel = new ESRI.ArcGIS.Display.CancelTrackerClass();
@@ -136,6 +146,7 @@ namespace Ecotrust
             progressDialog2.Animation = ESRI.ArcGIS.Framework.esriProgressAnimationTypes.esriDownloadFile;
             System.Boolean boolean_Continue = false;
             boolean_Continue = true;
+            int tileCount = 0;
 
             for (int lyrnum = 0; lyrnum < map.LayerCount; lyrnum++)
             {
@@ -157,7 +168,6 @@ namespace Ecotrust
                 {    
                     GlobalMercator.Coords mins = mercator.MetersToXYZTile(mapaoi.XMin, mapaoi.YMax, tz); // ymax bc of y coord flip
                     GlobalMercator.Coords maxs = mercator.MetersToXYZTile(mapaoi.XMax, mapaoi.YMin, tz); // map extent needs to be mercator
-                    int tileCount = 0;
 
                     // Create zoom directory if it doesn't exist
                     DirectoryInfo dir2 = new DirectoryInfo(dir.FullName + "\\" + tz);
@@ -174,9 +184,10 @@ namespace Ecotrust
                         for (int ty = (int)mins.y; ty <= (int)maxs.y; ty++)
                         {
                             tileCount += 1;
-                            stepProgressor.Message = layer.Name + " " + tz + " " + tx + " " + ty;
+                            stepProgressor.Message = layer.Name + "\\" + tz + "\\" + tx + "\\" + ty + ".png (" + tileCount + " of " + numTiles + ")";
                             
                             export.ExportFileName = dir3.FullName + "\\" + ty + ".png";
+
                             GlobalMercator.Bounds bnd = mercator.TileBounds(tx, ty, tz);
                             aoi.PutCoords(bnd.minx, bnd.miny, bnd.maxx, bnd.maxy);
                             aoi.SpatialReference = map.SpatialReference; // TODO aoi spatial reference == mercator?
@@ -188,7 +199,8 @@ namespace Ecotrust
                             activeView.Output(hDC, (System.Int16)export.Resolution, ref exportRECT, null, null); // Explicit Cast and 'ref' keyword needed 
                             export.FinishExporting();
                             export.Cleanup();
-                            stepProgressor.Step();
+
+                            stepProgressor.Position = tileCount;
 
                             //Check if the cancel button was pressed. If so, break out of row
                             boolean_Continue = trackCancel.Continue();
@@ -206,11 +218,13 @@ namespace Ecotrust
                         break;
 
                     // Write log
+                    /*
                     using (System.IO.StreamWriter file = new System.IO.StreamWriter( exportDir + "\\log.txt", true))
                     {
                         file.WriteLine(layer.Name + ", zoom " + tz + ", numtiles " + tileCount + ":" + 
                           mins.x + " " + mins.y + " " + maxs.x + " " + maxs.y);
                     }
+                     */
 
                 }
                 // Turn it off
