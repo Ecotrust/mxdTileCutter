@@ -81,8 +81,8 @@ namespace Ecotrust
             ESRI.ArcGIS.Output.ExportPNG pngexport = new ESRI.ArcGIS.Output.ExportPNGClass();
             ESRI.ArcGIS.Display.IColor tcolor = new ESRI.ArcGIS.Display.RgbColorClass();
             ((IRgbColor)tcolor).Red = 255;
-            ((IRgbColor)tcolor).Green = 0;
-            ((IRgbColor)tcolor).Blue = 0;
+            ((IRgbColor)tcolor).Green = 255;
+            ((IRgbColor)tcolor).Blue = 255;
             // TODO set transparency, 32 bit png
             ((IRgbColor)tcolor).Transparency = 0;  // Doesn't work?
             pngexport.BackgroundColor = tcolor;

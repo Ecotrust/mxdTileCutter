@@ -8,7 +8,7 @@ namespace Ecotrust
     class GlobalMercator
     {
         /*
-         * Code ported to C# from python. Derived from 
+         * Code ported to C# from globalmaptiles.py. Derived from 
          *
 ###############################################################################
 # $Id$
