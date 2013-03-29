@@ -19,7 +19,6 @@ using ESRI.ArcGIS.Output;
  * json output
  * sanity checking
  * projection (map, layers)
- * min/max zoom as user input
  * base url as user input
  * avoid negative tile coords when zoomed to full earth extent
  * transparency 
@@ -52,11 +51,9 @@ namespace Ecotrust
                 return; //TODO 
             }
 
-            // Use the OpenFileDialog Class to choose export folder
+            // Use the FolderBrowserDialog Class to choose export folder
             System.Windows.Forms.FolderBrowserDialog folderDialog = new System.Windows.Forms.FolderBrowserDialog();
             folderDialog.Description = "Select output folder for map tiles...";
-            
-            //folderDialog.RootFolder = @"C:\\"; // TODO
             string exportDir = "";
             if (folderDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
@@ -114,8 +111,8 @@ namespace Ecotrust
             Double numTiles = 0;
             for (int tz = minzoom; tz <= maxzoom; tz++)
             {
-                tempmins = mercator.MetersToXYZTile(mapaoi.XMin, mapaoi.YMax, tz); // ymax bc of y coord flip
-                tempmaxs = mercator.MetersToXYZTile(mapaoi.XMax, mapaoi.YMin, tz); 
+                tempmins = mercator.MetersToTile(mapaoi.XMin, mapaoi.YMin, tz); 
+                tempmaxs = mercator.MetersToTile(mapaoi.XMax, mapaoi.YMax, tz); 
                 numTiles += ((tempmaxs.y - tempmins.y)+1) * ((tempmaxs.x - tempmins.x)+1);
             }
             numTiles *= map.LayerCount;
@@ -166,8 +163,8 @@ namespace Ecotrust
                 // Loop through zoom levels, rows, cols 
                 for (int tz = minzoom; tz <= maxzoom; tz++)
                 {    
-                    GlobalMercator.Coords mins = mercator.MetersToXYZTile(mapaoi.XMin, mapaoi.YMax, tz); // ymax bc of y coord flip
-                    GlobalMercator.Coords maxs = mercator.MetersToXYZTile(mapaoi.XMax, mapaoi.YMin, tz); // map extent needs to be mercator
+                    GlobalMercator.Coords mins = mercator.MetersToTile(mapaoi.XMin, mapaoi.YMin, tz);
+                    GlobalMercator.Coords maxs = mercator.MetersToTile(mapaoi.XMax, mapaoi.YMax, tz);
 
                     // Create zoom directory if it doesn't exist
                     DirectoryInfo dir2 = new DirectoryInfo(dir.FullName + "\\" + tz);
@@ -183,10 +180,14 @@ namespace Ecotrust
 
                         for (int ty = (int)mins.y; ty <= (int)maxs.y; ty++)
                         {
+
+                            // Flip y-axis for output tile name
+                            int invertTy = (int) ((Math.Pow(2, tz) - 1) - ty);
+
                             tileCount += 1;
-                            stepProgressor.Message = layer.Name + "\\" + tz + "\\" + tx + "\\" + ty + ".png (" + tileCount + " of " + numTiles + ")";
+                            stepProgressor.Message = layer.Name + "\\" + tz + "\\" + tx + "\\" + invertTy + ".png (" + tileCount + " of " + numTiles + ")";
                             
-                            export.ExportFileName = dir3.FullName + "\\" + ty + ".png";
+                            export.ExportFileName = dir3.FullName + "\\" + invertTy + ".png";
 
                             GlobalMercator.Bounds bnd = mercator.TileBounds(tx, ty, tz);
                             aoi.PutCoords(bnd.minx, bnd.miny, bnd.maxx, bnd.maxy);
@@ -217,14 +218,12 @@ namespace Ecotrust
                     if (!boolean_Continue)
                         break;
 
-                    // Write log
-                    /*
+                    // Write log                    
                     using (System.IO.StreamWriter file = new System.IO.StreamWriter( exportDir + "\\log.txt", true))
                     {
                         file.WriteLine(layer.Name + ", zoom " + tz + ", numtiles " + tileCount + ":" + 
                           mins.x + " " + mins.y + " " + maxs.x + " " + maxs.y);
                     }
-                     */
 
                 }
                 // Turn it off
@@ -237,7 +236,8 @@ namespace Ecotrust
             for (int i = 0; i < map.LayerCount; i++)
                 map.get_Layer(i).Visible = true;
 
-            activeView.Extent = mapaoi; // restore extent
+            // restore extent
+            activeView.FullExtent = mapaoi; 
             activeView.Refresh();
 
             // Done
