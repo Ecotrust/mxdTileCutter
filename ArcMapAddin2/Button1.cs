@@ -21,9 +21,10 @@ using ESRI.ArcGIS.Output;
  * projection (map, layers)
  * base url as user input
  * avoid negative tile coords when zoomed to full earth extent
- * transparency 
  * avoid outputing blank tiles?
  * confirm alignment and tile coordinates
+ * time elapsed and estimated time remaining
+ * logging
  * 
  */ 
 
@@ -77,16 +78,15 @@ namespace Ecotrust
             int tileSizeX = 256;
             int tileSizeY = 256;
 
-            // set up exporter 
-            ESRI.ArcGIS.Output.ExportPNG pngexport = new ESRI.ArcGIS.Output.ExportPNGClass();
+            // set up exporter with transparent background
+            ESRI.ArcGIS.Output.IExportPNG pngexport = new ESRI.ArcGIS.Output.ExportPNGClass();
             ESRI.ArcGIS.Display.IColor tcolor = new ESRI.ArcGIS.Display.RgbColorClass();
-            ((IRgbColor)tcolor).Red = 255;
-            ((IRgbColor)tcolor).Green = 255;
-            ((IRgbColor)tcolor).Blue = 255;
-            // TODO set transparency, 32 bit png
-            ((IRgbColor)tcolor).Transparency = 0;  // Doesn't work?
-            pngexport.BackgroundColor = tcolor;
-            ((IExportPNG)pngexport).TransparentColor = tcolor;
+            // Warning: 254,254,254 will be set to transparent; don't use in any of map styling
+            ((IRgbColor)tcolor).Red = 254;
+            ((IRgbColor)tcolor).Green = 254;
+            ((IRgbColor)tcolor).Blue = 254;
+            ((ExportPNG)pngexport).BackgroundColor = tcolor;
+            pngexport.TransparentColor = tcolor;
             ESRI.ArcGIS.Output.IExport export = (ESRI.ArcGIS.Output.IExport)pngexport;
             
             ESRI.ArcGIS.esriSystem.tagRECT exportRECT;
