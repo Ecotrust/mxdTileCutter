@@ -117,4 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="label3.Text" xml:space="preserve">
+    <value>Each layer in your mxd will be converted into a set of static tile images.
+The tiles will be in Web Mercator, png32 format with transparency and 
+use the ZXY tile naming scheme. Tiles will only be rendered for the 
+current extent of your active map view. </value>
+  </data>
 </root>

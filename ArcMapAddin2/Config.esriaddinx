@@ -13,7 +13,8 @@
   <AddIn language="CLR4.0" library="ArcMapAddin2.dll" namespace="Ecotrust">
     <ArcMap>
       <Commands>
-        <Button id="Microsoft_ArcMapAddin1_Button1" class="Button1" message="Matt's Button Customization" caption="Matt's Button" tip="Add-in command tooltip." category="Add-In Controls" image="Images\Button1.png" />
+        <Button id="Microsoft_ArcMapAddin1_Button1" class="Button1" message="Create XYZ png tiles for web mapping." 
+                caption="MXD Tile Cutter" tip="MXD tile cutter" category="MXD Tile Cutter" image="Images\Button1.png" />
       </Commands>
       <Toolbars>
         <Toolbar id="Microsoft_Ecotrust_Ecotrust_Toolbar" caption="Ecotrust Toolbar" showInitially="true">

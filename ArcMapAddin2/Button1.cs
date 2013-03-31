@@ -159,6 +159,9 @@ namespace Ecotrust
                 DirectoryInfo dir = new DirectoryInfo(exportDir  + "\\" + layer.Name);
                 if (!dir.Exists)
                     dir.Create();
+
+                DateTime startTime = DateTime.Now;
+
                     
                 // Loop through zoom levels, rows, cols 
                 for (int tz = minzoom; tz <= maxzoom; tz++)
@@ -185,7 +188,15 @@ namespace Ecotrust
                             int invertTy = (int) ((Math.Pow(2, tz) - 1) - ty);
 
                             tileCount += 1;
-                            stepProgressor.Message = layer.Name + "\\" + tz + "\\" + tx + "\\" + invertTy + ".png (" + tileCount + " of " + numTiles + ")";
+
+                            // TODO Calculate time and set new message
+                            // TimeSpan timeElapsed = TimeSpan.FromTicks(DateTime.Now.Subtract(startTime).Ticks); // * ((double)tileCount - (numTiles + 1)) / (numTiles + 1));
+                            // double timeRemaining = (timeElapsed.TotalSeconds / (tileCount / numTiles)) - timeElapsed.TotalSeconds;
+                            //(" + ((int)timeRemaining).ToString() +" remaining)";
+
+                            stepProgressor.Message = layer.Name + "\\" + tz + "\\" + tx + "\\" + invertTy +
+                                ".png (" + tileCount + " of " + numTiles + ")"; 
+
                             
                             export.ExportFileName = dir3.FullName + "\\" + invertTy + ".png";
 
