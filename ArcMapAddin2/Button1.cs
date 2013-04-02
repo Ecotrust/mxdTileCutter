@@ -1,7 +1,37 @@
-﻿using System;
+﻿/*
+ * Author: Matthew Perry; mperry at ecotrust.org
+ * 
+Copyright (c) 2013, Ecotrust
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of the <organization> nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using System.Drawing;
 
 using ESRI.ArcGIS.Carto;
 using ESRI.ArcGIS.ArcMapUI;
@@ -12,19 +42,24 @@ using ESRI.ArcGIS.Geometry;
 using ESRI.ArcGIS.Display;
 using ESRI.ArcGIS.Output;
 
+
 /*
  * TODO list
  * 
  * openlayers output
  * json output
  * sanity checking
- * projection (map, layers)
- * base url as user input
+ * check projection (dataframe, layers)
+ * base url as user input for purposes of creating json fixture
  * avoid negative tile coords when zoomed to full earth extent
  * avoid outputing blank tiles?
- * confirm alignment and tile coordinates
  * time elapsed and estimated time remaining
  * logging
+ * legends
+ * user input for which layers to process (currently defaults to all)
+ * optimization (indexes/preprocessing of data)
+ * utfgrids
+ * sluggify layer names
  * 
  */ 
 
@@ -141,8 +176,8 @@ namespace Ecotrust
             progressDialog2.Description = "Rendering " + numTiles.ToString() + " map tiles";
             progressDialog2.Title = "Creating map tiles...";
             progressDialog2.Animation = ESRI.ArcGIS.Framework.esriProgressAnimationTypes.esriDownloadFile;
-            System.Boolean boolean_Continue = false;
-            boolean_Continue = true;
+            System.Boolean boolean_Continue = true;
+
             int tileCount = 0;
 
             for (int lyrnum = 0; lyrnum < map.LayerCount; lyrnum++)
@@ -162,7 +197,6 @@ namespace Ecotrust
 
                 DateTime startTime = DateTime.Now;
 
-                    
                 // Loop through zoom levels, rows, cols 
                 for (int tz = minzoom; tz <= maxzoom; tz++)
                 {    
@@ -204,7 +238,7 @@ namespace Ecotrust
                             aoi.PutCoords(bnd.minx, bnd.miny, bnd.maxx, bnd.maxy);
                             aoi.SpatialReference = map.SpatialReference; // TODO aoi spatial reference == mercator?
                             // Use FullExtent instead of Extent to make the extent independent of the activeView ratio
-                            activeView.FullExtent = aoi;
+                            activeView.FullExtent = aoi;                          
 
                             // Export
                             System.Int32 hDC = export.StartExporting();
